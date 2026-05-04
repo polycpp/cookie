@@ -25,13 +25,35 @@ Known differences from upstream:
 
 - Cookie objects use `std::map<std::string, std::string>`, so request-cookie serialization is key-sorted and cannot represent JavaScript `undefined` values.
 - `sameSite` is represented as the strings `"strict"`, `"lax"`, or `"none"`; the JavaScript boolean shorthand is omitted.
+- Set-Cookie APIs use typed C++ overloads and option structs instead of dynamic JavaScript value coercion.
+- Parsing is tolerant of invalid parse-only attribute values, while serialization validates emitted names, values, and attributes and throws `polycpp::TypeError` on invalid output.
 - JavaScript package-loader details and null-prototype object behavior are not part of the C++ API.
 
 ## Prerequisites
 
 - CMake 3.20+
-- GCC 13+ or Clang 16+
+- GCC 11+ or Clang 15+ minimum on Linux; GCC 13+ or Clang 16+ recommended
 - C++20 support required
+
+## Consuming with CMake
+
+```cmake
+include(FetchContent)
+
+FetchContent_Declare(
+    polycpp_cookie
+    GIT_REPOSITORY https://github.com/polycpp/cookie.git
+    GIT_TAG        v1.0.0
+)
+FetchContent_MakeAvailable(polycpp_cookie)
+
+target_link_libraries(my_app PRIVATE polycpp::cookie)
+```
+
+Pin `GIT_TAG` to a release tag or commit SHA you have tested. cookie's
+CMake file pins the transitive `polycpp` revision; if your environment
+cannot fetch the base polycpp repository directly, pass
+`-DFETCHCONTENT_SOURCE_DIR_POLYCPP=/path/to/polycpp` when configuring.
 
 ## Building
 
@@ -42,6 +64,10 @@ cmake --build build -j$(nproc)
 
 Optional examples and benchmarks are available with
 `-DPOLYCPP_COOKIE_BUILD_EXAMPLES=ON -DPOLYCPP_COOKIE_BUILD_BENCHMARKS=ON`.
+
+Inherited polycpp defaults are `POLYCPP_IO=asio`,
+`POLYCPP_SSL_BACKEND=openssl`, and `POLYCPP_UNICODE=auto`. Android defaults
+to `POLYCPP_IO=libuv` and `POLYCPP_SSL_BACKEND=boringssl` when unset.
 
 ## Running Tests
 

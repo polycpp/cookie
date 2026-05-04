@@ -2,7 +2,7 @@ Issue a secure session cookie
 =============================
 
 **You'll build:** a small HTTP handler that hands out a short-lived,
-signed session cookie and invalidates it on sign-out.
+opaque server-side session id and invalidates it on sign-out.
 
 **You'll use:** :cpp:func:`polycpp::cookie::serialize`,
 :cpp:class:`polycpp::cookie::SerializeOptions`, and the ``sameSite``
@@ -80,9 +80,11 @@ To invalidate a cookie, re-issue it with ``maxAge = 0``:
                       polycpp::cookie::serialize("sid", "", opts));
 
 The ``Max-Age=0`` attribute tells the browser to drop the cookie
-immediately. Matching the original attributes (``Path``, ``Domain``,
-``Secure``) is important — browsers treat cookies with different
-attributes as distinct entries.
+immediately. Match the original ``Path`` and ``Domain`` because those
+attributes identify which browser cookie is being deleted. Reusing the
+rest of ``sessionOpts`` keeps the deletion header consistent, but
+``Secure``, ``HttpOnly``, and ``SameSite`` do not create separate cookie
+identities.
 
 What you learned
 ----------------
@@ -92,6 +94,9 @@ What you learned
 - The sign-out flow reuses the sign-in attributes with ``maxAge = 0``.
 - Cookie content is an opaque id; authentication state lives on the
   server.
+- If you choose signed stateless cookie values instead, sign before
+  calling ``serialize`` and verify after ``parse``; cookie only handles
+  header syntax.
 
 Next: :doc:`round-trip` shows how to verify parse/serialize symmetry in
 a unit test.

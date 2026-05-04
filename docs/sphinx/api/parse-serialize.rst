@@ -7,8 +7,8 @@ page are stateless — every call is independent.
 .. doxygenfunction:: polycpp::cookie::parseCookie
 .. doxygenfunction:: polycpp::cookie::stringifyCookie
 .. doxygenfunction:: polycpp::cookie::parseSetCookie
-.. doxygenfunction:: polycpp::cookie::stringifySetCookie(const SetCookie&)
-.. doxygenfunction:: polycpp::cookie::stringifySetCookie(const std::string&, const std::string&, const SerializeOptions&)
+.. doxygenfunction:: polycpp::cookie::stringifySetCookie(const SetCookie &, const StringifyOptions &)
+.. doxygenfunction:: polycpp::cookie::stringifySetCookie(const std::string &, const std::string &, const SerializeOptions &)
 
 Convenience aliases
 -------------------

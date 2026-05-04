@@ -7,14 +7,14 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
-# Fetch polycpp (disable its tests when building as a dependency)
+# Fetch polycpp (disable its tests when building as a dependency).
+# Keep the revision pinned; callers can override with FETCHCONTENT_SOURCE_DIR_POLYCPP.
 set(POLYCPP_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
     polycpp
-    GIT_REPOSITORY git@github.com:enricohuang/polycpp.git
-    GIT_TAG        master
-    GIT_SHALLOW    TRUE
+    GIT_REPOSITORY https://github.com/enricohuang/polycpp.git
+    GIT_TAG        7a076d7bbffaa16f6001e5c4fa3a0aead34ddb32
 )
 FetchContent_MakeAvailable(polycpp)
 

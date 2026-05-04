@@ -22,7 +22,7 @@ Step 1 — parse once, inspect the attribute struct
    using namespace polycpp::cookie;
 
    SetCookie parsed = parseSetCookie(
-       "sid=abc; Domain=example.com; Path=/api; Max-Age=600; "
+       "sid=abc; Max-Age=600; Domain=example.com; Path=/api; "
        "HttpOnly; Secure; SameSite=Strict");
 
    EXPECT_EQ(parsed.name, "sid");
@@ -34,11 +34,12 @@ Step 1 — parse once, inspect the attribute struct
    EXPECT_TRUE(parsed.secure);
    EXPECT_EQ(parsed.sameSite, "strict");
 
-Every attribute is ``std::optional``-typed on ``SetCookie``, so a missing
-``Expires`` is ``std::nullopt`` — not an empty string. That distinction
-matters when you round-trip: serializing a ``nullopt`` attribute emits
-nothing, serializing an empty string emits the attribute with an empty
-value.
+Value-bearing attributes on ``SetCookie`` use ``std::optional``:
+``maxAge``, ``expires``, ``domain``, ``path``, ``priority``, and
+``sameSite``. Flag attributes are booleans: ``httpOnly``, ``secure``,
+and ``partitioned``. A missing optional attribute emits nothing, and
+empty ``Domain`` or ``Path`` strings also emit nothing because the
+serializer skips those two empty values.
 
 Step 2 — re-serialize
 ---------------------
@@ -47,7 +48,7 @@ Step 2 — re-serialize
 
    std::string serialized = stringifySetCookie(parsed);
    EXPECT_EQ(serialized,
-             "sid=abc; Domain=example.com; Path=/api; Max-Age=600; "
+             "sid=abc; Max-Age=600; Domain=example.com; Path=/api; "
              "HttpOnly; Secure; SameSite=Strict");
 
 Attribute order in the output follows the order the library emits
@@ -87,6 +88,6 @@ What you learned
 
 - ``parseSetCookie`` returns a strongly-typed :cpp:class:`SetCookie`,
   not a string map.
-- Unset attributes are ``std::nullopt`` — use that to distinguish
-  "absent" from "empty".
+- Value-bearing attributes are optional; flag attributes are booleans.
+- Empty ``Domain`` and ``Path`` values are parsed but not re-emitted.
 - Round-trips are canonical, not verbatim.

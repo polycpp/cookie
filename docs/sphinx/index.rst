@@ -58,10 +58,30 @@ Getting started
    FetchContent_Declare(
        polycpp_cookie
        GIT_REPOSITORY https://github.com/polycpp/cookie.git
-       GIT_TAG        master
+       GIT_TAG        v1.0.0
    )
    FetchContent_MakeAvailable(polycpp_cookie)
    target_link_libraries(my_app PRIVATE polycpp::cookie)
+
+Pin ``GIT_TAG`` to a release tag or commit SHA you have tested; avoid
+floating branch names in application builds.
+
+Version and compatibility
+-------------------------
+
+cookie ``1.0.0`` is based on the public API of upstream npm
+``cookie@1.1.1``. The main C++ differences are intentional:
+
+- request-cookie containers are ``std::map<std::string, std::string>``, so
+  ``stringifyCookie`` output is key-sorted and JavaScript ``undefined``
+  values are not representable;
+- ``SameSite`` accepts string values only, not the JavaScript boolean
+  shorthand;
+- Set-Cookie entry points use typed C++ overloads and option structs
+  instead of arbitrary runtime value coercion;
+- parsing is tolerant of invalid parse-only attribute values, while
+  serialization validates emitted names, values, and attributes and throws
+  ``polycpp::TypeError`` for invalid output.
 
 :doc:`Installation <getting-started/installation>` · :doc:`Quickstart <getting-started/quickstart>` · :doc:`Tutorials <tutorials/index>` · :doc:`API reference <api/index>`
 
