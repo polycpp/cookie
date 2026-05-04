@@ -2,7 +2,7 @@
 
 ## Deferred Features
 
-- none for the current public v0 API; broader top-site fixture coverage and benchmark parity are test/performance follow-ups rather than missing runtime API.
+- none for the current public v0 API.
 
 ## Deliberate Behavior Changes
 
@@ -15,11 +15,12 @@
 ## Unsupported Runtime-Specific Features
 
 - CommonJS module loading and npm package metadata are replaced by the CMake target `polycpp::cookie`.
-- Upstream benchmark scripts and fixture-regeneration scripts are not shipped as C++ runtime APIs.
+- Upstream fixture-regeneration scripts are not shipped as C++ runtime APIs.
+- Upstream JavaScript benchmark scripts are represented by the optional CMake benchmark target `polycpp_cookie_benchmark`.
 - Node-only `Buffer` usage inside upstream tests is not a cookie API surface; C++ callers can implement equivalent encode/decode callbacks.
 
 ## Audit findings (libgen catch-up)
 
-| ID | Severity | Location | Description | Recommended classification |
+| ID | Severity | Location | Description | Resolution |
 |---|---|---|---|---|
-| AF-2026-05-04-A | medium | `include/polycpp/cookie/detail/cookie.hpp:381` | `parseSetCookie` calls `std::stoi` for syntactically valid `Max-Age` strings; an oversized integer can throw instead of preserving upstream's tolerant parse behavior. | bug-fix-needed with regression test for oversized `Max-Age` |
+| AF-2026-05-04-A | medium | `include/polycpp/cookie/detail/cookie.hpp:395` | `parseSetCookie` called `std::stoi` for syntactically valid `Max-Age` strings; an oversized integer could throw instead of preserving upstream's tolerant parse behavior. | resolved 2026-05-04 - replaced the narrowing parse with non-throwing `std::from_chars`; pinned by `ParseSetCookieTest.IgnoreOverflowingMaxAge` and `ParseSetCookieTest.IgnoreUnderflowingMaxAge`. |

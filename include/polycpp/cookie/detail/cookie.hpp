@@ -8,9 +8,11 @@
 #include <polycpp/cookie/cookie.hpp>
 
 #include <algorithm>
+#include <charconv>
 #include <cctype>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 
 #include <polycpp/core/date.hpp>
 #include <polycpp/core/error.hpp>
@@ -162,6 +164,19 @@ inline bool isValidMaxAge(const std::string& val) {
         if (!std::isdigit(static_cast<unsigned char>(val[i]))) return false;
     }
     return true;
+}
+
+inline std::optional<int> parseMaxAge(const std::string& val) {
+    if (!isValidMaxAge(val)) return std::nullopt;
+
+    int result = 0;
+    const char* first = val.data();
+    const char* last = first + val.size();
+    auto parsed = std::from_chars(first, last, result);
+    if (parsed.ec != std::errc{} || parsed.ptr != last) {
+        return std::nullopt;
+    }
+    return result;
 }
 
 // ============================================================================
@@ -377,8 +392,8 @@ inline SetCookie parseSetCookie(
         } else if (attrLower == "path") {
             if (val) setCookie.path = *val;
         } else if (attrLower == "max-age") {
-            if (val && detail::isValidMaxAge(*val)) {
-                setCookie.maxAge = std::stoi(*val);
+            if (val) {
+                setCookie.maxAge = detail::parseMaxAge(*val);
             }
         } else if (attrLower == "expires") {
             if (val && !val->empty()) {

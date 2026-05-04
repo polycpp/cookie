@@ -93,7 +93,7 @@ No direct runtime dependencies exist, so no companion dependency or private help
 
 - analyzer-reported target-package framework object accesses: none.
 - analyzer-reported dependency framework object accesses: none.
-- manual review decision: expose pure functions over strings, maps, and typed structs; callers own integration with `polycpp::http::Headers`, request, or response objects.
+- manual review decision: expose core pure functions over strings, maps, and typed structs, plus a separate optional adapter header for `polycpp::http::Headers`.
 
 ## Porting decisions
 

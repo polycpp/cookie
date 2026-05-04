@@ -48,6 +48,16 @@ if(POLYCPP_COOKIE_BUILD_EXAMPLES)
     )
 endif()
 
+option(POLYCPP_COOKIE_BUILD_BENCHMARKS "Build benchmarks" OFF)
+if(POLYCPP_COOKIE_BUILD_BENCHMARKS)
+    add_executable(polycpp_cookie_benchmark benchmarks/cookie_bench.cpp)
+    target_link_libraries(polycpp_cookie_benchmark PRIVATE polycpp::cookie)
+    set_target_properties(polycpp_cookie_benchmark PROPERTIES
+        OUTPUT_NAME cookie_bench
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/benchmarks
+    )
+endif()
+
 # Tests
 if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
     set(POLYCPP_COOKIE_BUILD_TESTS_DEFAULT ON)

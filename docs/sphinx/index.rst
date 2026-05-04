@@ -39,15 +39,16 @@ Drop-in for request/response middleware that already speaks polycpp's
    .. grid-item-card:: Tested
       :margin: 1
 
-      Ported test corpus from the npm package and RFC 6265 — focused tests
-      across attribute parsing, round-trips, and edge cases (empty values,
-      custom encoding, and duplicate names).
+      Ported test corpus from the npm package and RFC 6265, including
+      upstream top-site fixtures, attribute parsing, round-trips, and edge
+      cases (empty values, custom encoding, and duplicate names).
 
    .. grid-item-card:: Plays well with polycpp
       :margin: 1
 
-      Reuses polycpp URI, date, number, and error helpers while keeping the
-      public API to ordinary C++ strings and aggregates.
+      Reuses polycpp URI, date, number, and error helpers, with optional
+      ``polycpp::http::Headers`` adapters for applications already using
+      polycpp HTTP types.
 
 Getting started
 ---------------

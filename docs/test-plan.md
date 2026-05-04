@@ -6,13 +6,15 @@
 - Request `Cookie` serialization: key/value validation, default encoding, custom encoder, empty maps, and multi-entry output.
 - `Set-Cookie` parsing: name/value splitting, unknown attributes, boolean attributes, `Max-Age`, `Expires`, `Domain`, `Path`, `Priority`, `SameSite`, and `Partitioned`.
 - `Set-Cookie` serialization: validation failures, attribute output order, custom encoder, flag attributes, optional attributes, and aliases.
-- Regression follow-up: oversized `Max-Age` parse should not throw and should match the chosen documented behavior.
+- `Max-Age` overflow regression: out-of-range parse values must not throw and are ignored because the C++ API stores `maxAge` as `std::optional<int>`.
 
 ## Integration tests
 
 - Round-trip request cookie parse/stringify for representative maps.
 - Round-trip `Set-Cookie` parse/stringify for canonical attribute combinations.
 - Public-header examples under `examples/parse_header.cpp` and `examples/session_lifecycle.cpp` compile when `POLYCPP_COOKIE_BUILD_EXAMPLES=ON`.
+- HTTP adapter helpers under `<polycpp/cookie/http.hpp>` parse and append through `polycpp::http::Headers`.
+- Optional benchmark target `polycpp_cookie_benchmark` builds when `POLYCPP_COOKIE_BUILD_BENCHMARKS=ON`.
 - README usage snippets mirror public API calls covered by tests and examples.
 
 ## Compatibility tests adapted from upstream
@@ -23,8 +25,10 @@
   - `src/stringify-cookie.spec.ts` -> `tests/test_cookie.cpp` `StringifyCookieTest.*` and `RoundTripTest.ParseAndStringifyCookie`.
   - `src/parse-set-cookie.spec.ts` -> `tests/test_cookie.cpp` `ParseSetCookieTest.*`.
   - `src/stringify-set-cookie.spec.ts` -> `tests/test_cookie.cpp` `StringifySetCookieTest.*`, `AliasTest.SerializeAlias`, and `RoundTripTest.ParseAndStringifySetCookie`.
+- imported upstream fixture coverage:
+  - `scripts/top-cookie.json` -> `tests/fixtures/top_site_fixtures.hpp` and `TopSiteFixtureTest.ParseCookieFixtures`.
+  - `scripts/top-set-cookie.json` -> `tests/fixtures/top_site_fixtures.hpp` and `TopSiteFixtureTest.ParseSetCookieFixtures`.
 - omitted upstream cases:
-  - `scripts/top-cookie.json` and `scripts/top-set-cookie.json` snapshot suites are not imported yet because v0 uses representative compatibility cases; they are a follow-up for broader fixture coverage.
   - upstream `undefined` value stringify cases are not applicable to `std::map<std::string, std::string>`.
   - upstream boolean `sameSite` shorthand cases are omitted because C++ v0 uses string values.
   - upstream invalid numeric runtime type cases for `maxAge` are compile-time-only in C++ because `SerializeOptions::maxAge` is `std::optional<int>`.
@@ -32,7 +36,7 @@
 ## Security and fail-closed tests
 
 - Existing tests cover invalid names, invalid encoded values, invalid domains, invalid paths, invalid priority, invalid sameSite, malformed percent escapes, and duplicate cookie names.
-- Add a regression test for oversized `Max-Age` parse behavior before resolving audit finding AF-2026-05-04-A.
+- Oversized and underflowing `Max-Age` parse values are covered by regression tests for AF-2026-05-04-A.
 - Service-backed security tests are not applicable because the package does not authenticate, encrypt, sign, or connect to external services.
 
 ## Protocol/client tests
@@ -57,16 +61,17 @@ not applicable because `cookie` is a synchronous header parser/serializer and ha
 - Example targets must compile with public headers.
 - `python3 docs/build.py` must pass without Sphinx warnings.
 - `scripts/check-port-validation.py --run-docs-build` must pass.
-- Audit finding AF-2026-05-04-A should be triaged before production-quality release claims.
+- Audit finding AF-2026-05-04-A must remain resolved before production-quality release claims.
 
 ## Current validation
 
 - 2026-05-04: `python3 <libgen>/scripts/check-port-readiness.py --baseline <repo>` -> passed.
 - 2026-05-04: `python3 <libgen>/scripts/check-port-readiness.py --strict <repo>` -> passed.
-- 2026-05-04: `cmake -B build-libgen-catchup -G Ninja -DCMAKE_BUILD_TYPE=Debug -DFETCHCONTENT_SOURCE_DIR_POLYCPP=<polycpp checkout> -DPOLYCPP_COOKIE_BUILD_TESTS=ON -DPOLYCPP_COOKIE_BUILD_EXAMPLES=ON` -> configured successfully. CMake warned that GCC 11.4.0 has known polycpp issues and recommends GCC 12+.
-- 2026-05-04: `cmake --build build-libgen-catchup --target polycpp_cookie_test_cookie polycpp_cookie_example_parse_header polycpp_cookie_example_session_lifecycle -j2` -> passed.
-- 2026-05-04: `ctest --test-dir build-libgen-catchup --output-on-failure` -> 91/91 tests passed.
-- 2026-05-04: `printf 'a=1; b=two%20words\n' | ./build-libgen-catchup/examples/parse_header` -> printed decoded cookie pairs.
+- 2026-05-04: `cmake -B build-libgen-catchup -G Ninja -DCMAKE_BUILD_TYPE=Debug -DFETCHCONTENT_SOURCE_DIR_POLYCPP=<polycpp checkout> -DPOLYCPP_COOKIE_BUILD_TESTS=ON -DPOLYCPP_COOKIE_BUILD_EXAMPLES=ON -DPOLYCPP_COOKIE_BUILD_BENCHMARKS=ON` -> configured successfully. CMake warned that GCC 11.4.0 has known polycpp issues and recommends GCC 12+.
+- 2026-05-04: `cmake --build build-libgen-catchup --target polycpp_cookie_test_cookie polycpp_cookie_example_parse_header polycpp_cookie_example_session_lifecycle polycpp_cookie_benchmark -j2` -> passed.
+- 2026-05-04: `ctest --test-dir build-libgen-catchup --output-on-failure` -> 99/99 tests passed.
+- 2026-05-04: `printf '%s\n' 'a=1; b=two%20words' | ./build-libgen-catchup/examples/parse_header` -> printed decoded cookie pairs.
 - 2026-05-04: `./build-libgen-catchup/examples/session_lifecycle signin && ./build-libgen-catchup/examples/session_lifecycle refresh && ./build-libgen-catchup/examples/session_lifecycle signout` -> printed expected `Set-Cookie` lifecycle headers.
+- 2026-05-04: `./build-libgen-catchup/benchmarks/cookie_bench 10` -> printed parse benchmark rows for upstream-equivalent cases.
 - 2026-05-04: `python3 docs/build.py` -> Doxygen and Sphinx completed successfully with `-W --keep-going`.
 - 2026-05-04: `python3 <libgen>/scripts/check-port-validation.py --run-docs-build <repo>` -> passed.

@@ -18,6 +18,8 @@ Implemented:
 - `stringifySetCookie` / `serialize` for response `Set-Cookie` headers
 - `Max-Age`, `Expires`, `Domain`, `Path`, `HttpOnly`, `Secure`, `Partitioned`, `Priority`, and `SameSite`
 - Custom value encode/decode callbacks
+- Optional `polycpp::http::Headers` adapters via `<polycpp/cookie/http.hpp>`
+- Top-site compatibility fixture tests and dependency-free parse benchmarks
 
 Known differences from upstream:
 
@@ -37,6 +39,9 @@ Known differences from upstream:
 cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DPOLYCPP_COOKIE_BUILD_TESTS=ON
 cmake --build build -j$(nproc)
 ```
+
+Optional examples and benchmarks are available with
+`-DPOLYCPP_COOKIE_BUILD_EXAMPLES=ON -DPOLYCPP_COOKIE_BUILD_BENCHMARKS=ON`.
 
 ## Running Tests
 

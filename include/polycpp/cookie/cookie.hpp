@@ -281,13 +281,33 @@ std::string stringifySetCookie(
     const std::string& value,
     const SerializeOptions& options = {});
 
-// Backward-compatible aliases matching npm cookie's parse/serialize exports.
+/**
+ * @brief Backward-compatible alias for parseCookie.
+ *
+ * @param str The Cookie header string to parse.
+ * @param options Optional parse options.
+ * @return Map of cookie name to cookie value.
+ *
+ * @see parseCookie
+ * @since 0.1.0
+ */
 inline std::map<std::string, std::string> parse(
     const std::string& str,
     const ParseOptions& options = {}) {
     return parseCookie(str, options);
 }
 
+/**
+ * @brief Backward-compatible alias for name/value stringifySetCookie.
+ *
+ * @param name Cookie name.
+ * @param value Cookie value.
+ * @param options Serialization options including Set-Cookie attributes.
+ * @return The Set-Cookie header string.
+ *
+ * @see stringifySetCookie
+ * @since 0.1.0
+ */
 inline std::string serialize(
     const std::string& name,
     const std::string& value,

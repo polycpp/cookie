@@ -5,7 +5,7 @@
 | `parseCookie(str, options?)` | `polycpp::cookie::parseCookie(const std::string&, const ParseOptions&)` | direct | Preserves first-wins duplicate behavior, whitespace trimming, percent-decoding fallback, and custom decoder hook. |
 | `parse` alias | `polycpp::cookie::parse` | compatibility layer | Inline alias delegates to `parseCookie` for migration familiarity. |
 | `stringifyCookie(cookie, options?)` | `polycpp::cookie::stringifyCookie(const std::map<std::string, std::string>&, const StringifyOptions&)` | adapted | Serializes key/value pairs with upstream validation and encoding; `std::map` gives sorted order and cannot represent JavaScript `undefined`. |
-| `parseSetCookie(str, options?)` | `polycpp::cookie::parseSetCookie(const std::string&, const ParseOptions&)` | direct | Parses name/value plus supported attributes and ignores invalid parse-only attribute values like upstream. Oversized `Max-Age` is an audit finding. |
+| `parseSetCookie(str, options?)` | `polycpp::cookie::parseSetCookie(const std::string&, const ParseOptions&)` | direct | Parses name/value plus supported attributes and ignores invalid parse-only attribute values like upstream, including non-throwing handling for out-of-range `Max-Age`. |
 | `stringifySetCookie(cookie, options?)` | `polycpp::cookie::stringifySetCookie(const SetCookie&, const StringifyOptions&)` | adapted | Typed `SetCookie` struct maps the upstream object overload; unsupported dynamic value shapes are compile-time omissions. |
 | `stringifySetCookie(name, val, options?)` | `polycpp::cookie::stringifySetCookie(const std::string&, const std::string&, const SerializeOptions&)` | direct | Name/value/options overload mirrors the main serialize call with typed options. |
 | `serialize` alias | `polycpp::cookie::serialize` | compatibility layer | Inline alias delegates to name/value `stringifySetCookie`. |
@@ -17,6 +17,7 @@
 | `sameSite` boolean-or-string union | `std::optional<std::string> sameSite` | adapted | String values are supported; boolean shorthand is omitted from C++ v0. |
 | `Object.create(null)` result object | no public C++ equivalent | omitted | JavaScript prototype-safety behavior is not meaningful for `std::map`. |
 | CommonJS package exports | CMake target `polycpp::cookie` and public header `<polycpp/cookie/cookie.hpp>` | adapted | C++ packaging follows companion conventions rather than JS module loading. |
+| not upstream | `<polycpp/cookie/http.hpp>` helpers for `polycpp::http::Headers` | adapted | Optional adapter layer for parsing `Cookie`, setting `Cookie`, parsing all `Set-Cookie` values, and appending `Set-Cookie` values through the base polycpp HTTP header container. Core upstream-shaped APIs remain string-based. |
 
 Status values:
 
@@ -37,7 +38,7 @@ Status values:
 - Upstream reads or mutates framework/request/response/context objects: none.
 - Upstream fields or methods read: none.
 - Upstream fields or methods written: none.
-- C++ adapter boundary: pure functions over `std::string`, `std::map`, `SetCookie`, and typed option structs; HTTP request/response integration remains with callers or future adapters.
+- C++ adapter boundary: core APIs are pure functions over `std::string`, `std::map`, `SetCookie`, and typed option structs; opt-in `http.hpp` helpers adapt those functions to `polycpp::http::Headers`.
 - Partial mutation risk on validation failure: none because the API does not mutate external framework objects.
 
 ## Node parity surface review
@@ -50,5 +51,5 @@ Status values:
 - Stream APIs: none.
 - Buffer and binary APIs: no public binary surface; callback users can encode/decode their own bytes before passing strings.
 - URL, timer, process, and filesystem APIs: none in runtime.
-- Crypto, compression, TLS, network, and HTTP APIs: none in runtime; caller-owned HTTP stacks consume the returned header strings.
+- Crypto, compression, TLS, and network APIs: none in runtime; HTTP integration is limited to optional `polycpp::http::Headers` adapters over the same string parse/serialize behavior.
 - Unsupported or non-meaningful Node-specific APIs and audit reason: CommonJS module loading, null-prototype objects, `undefined` values, dynamic arbitrary value coercion, and benchmark/update scripts are JavaScript runtime or tooling surfaces, not C++ library APIs.

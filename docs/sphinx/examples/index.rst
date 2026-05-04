@@ -18,8 +18,9 @@ From the repository root:
 
 .. code-block:: bash
 
-   cmake -B build -G Ninja
-   cmake --build build --target <example_name>
-   ./build/examples/<example_name>
+   cmake -B build -G Ninja -DPOLYCPP_COOKIE_BUILD_EXAMPLES=ON
+   cmake --build build --target polycpp_cookie_example_parse_header
+   printf '%s\n' 'a=1; b=two%20words' | ./build/examples/parse_header
 
-Examples are only built when ``POLYCPP_COOKIE_BUILD_EXAMPLES=ON`` is passed to CMake.
+For the session flow example, build ``polycpp_cookie_example_session_lifecycle``
+and run ``./build/examples/session_lifecycle signin``.

@@ -82,14 +82,14 @@ compatibility infrastructure used by HTTP frameworks and middleware.
 - Git source lacks `dist/`, so analyzing only the clone misses the shipped runtime and declaration files.
 - Upstream `Cookies` values may be `undefined`; the current C++ map cannot represent that JavaScript value.
 - Upstream `sameSite` accepts boolean `true` and `false`; the current C++ API accepts only validated strings.
-- Upstream parser accepts syntactically numeric `Max-Age` values through JavaScript `Number`; the current C++ implementation narrows to `int`.
+- Upstream parser accepts syntactically numeric `Max-Age` values through JavaScript `Number`; the C++ API stores `maxAge` as `std::optional<int>`, so out-of-range parse values are ignored without throwing.
 - The existing docs and examples previously referenced a nonexistent C++ `SameSite` enum; catch-up docs were updated to the actual string-based API.
 
 ## Companion repo alignment
 
 - companion repos inspected: local `ini`, `content-type`, `qs`, and `yaml` clones, plus the shared companion pattern guide.
 - CMake target and alias pattern: `polycpp_cookie` and `polycpp::cookie`, aligned with small utility companions.
-- public header layout: `include/polycpp/cookie/cookie.hpp` is the public header; no top-level `include/polycpp/cookie.hpp` aggregator exists.
+- public header layout: `include/polycpp/cookie/cookie.hpp` is the core public header; `include/polycpp/cookie/http.hpp` is an opt-in public adapter header for `polycpp::http::Headers`; no top-level `include/polycpp/cookie.hpp` aggregator exists.
 - detail/private header strategy: implementation split lives under `include/polycpp/cookie/detail/`; the public header includes the detail implementation after declarations so documented public-header users link successfully.
 - aggregator header strategy: `include/polycpp/cookie/detail/aggregator.hpp` is retained as an internal include point for the compiled target and tests.
 - examples strategy: two public-header examples are present and wired behind `POLYCPP_COOKIE_BUILD_EXAMPLES`.
@@ -102,8 +102,9 @@ compatibility infrastructure used by HTTP frameworks and middleware.
 - polycpp capability snapshot: 75bc07dfca6ac0aaca07c8748476246e8c18df74 from `git -C <polycpp checkout> rev-parse HEAD` on 2026-05-04.
 - transport/listener capability review: base polycpp provides `io::TcpAcceptor`, `io::PipeAcceptor`, `io::StreamAcceptor`, `net::Server` with TCP/path/native-handle listen modes, `tls::Server`, `tls::createServer`, `http::Server`, and `https::Server`; cookie does not expose listener behavior.
 - polycpp core types/functions selected: `polycpp::uri::encodeURIComponent`, `polycpp::uri::decodeURIComponent`, `polycpp::Date::parse`, `polycpp::Date::toUTCString`, `polycpp::Number::isFinite`, and `polycpp::TypeError`.
-- polycpp core types/functions rejected: `polycpp::http::Headers` is not used in v0 because upstream operates on raw header strings and does not mutate request/response objects; `polycpp::Buffer`, streams, events, timers, crypto, network, TLS, and HTTP server/client primitives are not runtime surfaces for this package.
-- public polycpp interop review: public APIs remain pure string and typed aggregate functions so they can be used with any HTTP stack; callers can pass results to `polycpp::http::Headers` themselves.
+- polycpp core types/functions selected for optional adapters: `polycpp::http::Headers` for `<polycpp/cookie/http.hpp>` helpers that parse `Cookie`, set `Cookie`, parse all `Set-Cookie` values, and append `Set-Cookie` values.
+- polycpp core types/functions rejected: `polycpp::Buffer`, streams, events, timers, crypto, network, TLS, and HTTP server/client primitives are not runtime surfaces for this package.
+- public polycpp interop review: core public APIs remain pure string and typed aggregate functions so they can be used with any HTTP stack; the separate `http.hpp` header adapts those APIs to `polycpp::http::Headers` without changing the core surface.
 - string policy: `std::string` is selected because cookie values are byte-oriented HTTP header text after caller-selected encoding; JavaScript UTF-16 code-unit semantics are not part of the public contract.
 - JsonValue/Object/Array policy: no JSON interop is exposed because schemas are fixed and better represented by maps and structs.
 - Date/time interop policy: public expiration uses `std::chrono::system_clock::time_point`; implementation reuses `polycpp::Date` for parse/UTC string parity.
@@ -113,7 +114,7 @@ compatibility infrastructure used by HTTP frameworks and middleware.
 - companion libs selected for reuse: none.
 - companion libs rejected or deferred: `content-type`, `qs`, `ini`, and `yaml` are convention references only; they do not own cookie parsing behavior.
 - new local abstractions introduced: `ParseOptions`, `StringifyOptions`, `SerializeOptions`, and `SetCookie` are package-specific typed equivalents of upstream option/object shapes and do not overlap with base polycpp platform abstractions.
-- reuse risks or integration gaps: the public API does not provide direct `polycpp::http::Headers` adapters; this is acceptable for v0 but remains a possible non-parity C++ extension. The public header now includes the detail implementation, which keeps usage simple but exposes more implementation code during compilation.
+- reuse risks or integration gaps: the public header includes the detail implementation, which keeps usage simple but exposes more implementation code during compilation. HTTP adapters are separated into `http.hpp` so the core header does not force callers to include HTTP types.
 
 ## Node parity surface audit
 
@@ -141,8 +142,8 @@ compatibility infrastructure used by HTTP frameworks and middleware.
 - downstream dependency role: foundational HTTP helper package used by web middleware and frameworks.
 - native substitution risk: high enough to avoid substituting a generic cookie library; package-specific validation and option defaults are the compatibility contract.
 - upstream implementation data to preserve: validation character ranges, decode fallback, duplicate first-wins behavior, attribute ordering, and parse/serialize option semantics.
-- generated or vendored data plan: no runtime generated data is required; top-site JSON fixtures are upstream test inputs only and are not committed in v0.
-- compatibility fixture strategy: existing `tests/test_cookie.cpp` ports representative upstream spec cases; future expansion should import top-site fixture snapshots into grouped compatibility tests.
+- generated or vendored data plan: no runtime generated data is required; upstream top-site JSON inputs are committed as test-only C++ fixtures under `tests/fixtures/top_site_fixtures.hpp`.
+- compatibility fixture strategy: `tests/test_cookie.cpp` ports representative upstream spec cases and imports all upstream top-site `Cookie` / `Set-Cookie` fixture inputs into grouped compatibility tests.
 
 ## Security and fail-closed review
 
@@ -155,7 +156,7 @@ compatibility infrastructure used by HTTP frameworks and middleware.
 - stateful parser/session-state policy, if protocol client/server: not applicable because parsing is stateless.
 - server/listener response writer matrix, if protocol server surface exists: not applicable because no server/listener surface exists.
 - key, secret, credential, or user-controlled input handling: cookie values are opaque strings; callers own secret storage and signing. The library validates serialized header syntax but does not authenticate contents.
-- misuse cases that must be tested: malformed percent escapes, duplicate names, invalid serialized names/values/domains/paths, invalid priority and sameSite values, and oversized `Max-Age` follow-up from the audit table.
+- misuse cases that must be tested: malformed percent escapes, duplicate names, invalid serialized names/values/domains/paths, invalid priority and sameSite values, and oversized or underflowing `Max-Age` parse values.
 
 ## Core use cases
 
@@ -167,24 +168,23 @@ compatibility infrastructure used by HTTP frameworks and middleware.
 
 ## Key features to port first
 
-- Already implemented in v0: parse, serialize, set-cookie parse/stringify, aliases, attribute validation, encode/decode hooks, and representative upstream compatibility tests.
+- Already implemented in v0: parse, serialize, set-cookie parse/stringify, aliases, attribute validation, encode/decode hooks, HTTP header adapters, upstream top-site fixture tests, and parse benchmarks.
 
 ## Features to defer
 
-- none for public upstream v0 surfaces; larger top-site fixture coverage and benchmarks can be expanded later as testing or performance follow-up.
+- none for public upstream v0 surfaces.
 
 ## Non-parity extension candidates
 
-- Optional helpers that read/write `Set-Cookie` through `polycpp::http::Headers`.
 - Optional strongly typed `SameSite` and `Priority` enum wrappers while retaining string compatibility.
-- Larger fixture-driven compatibility corpus generated from upstream top-site JSON snapshots.
+- Generated snapshot-output comparison against upstream top-site fixtures, if maintainers want exact serialized object snapshots in addition to the current fixture-input coverage.
 
 ## v0 scope
 
 - port version: 0.1.0
 - versioning note: port version is independent from upstream versioning.
-- supported APIs: `parseCookie`, `stringifyCookie`, `parseSetCookie`, `stringifySetCookie`, `parse`, `serialize`, `ParseOptions`, `StringifyOptions`, `SerializeOptions`, and `SetCookie`.
-- unsupported APIs: JavaScript `undefined` cookie values, null-prototype object semantics, boolean `sameSite` shorthand, arbitrary runtime coercion beyond typed C++ parameters, CommonJS loader behavior, and benchmarks.
+- supported APIs: `parseCookie`, `stringifyCookie`, `parseSetCookie`, `stringifySetCookie`, `parse`, `serialize`, `parseCookieHeader`, `setCookieHeader`, `parseSetCookieHeaders`, `appendSetCookieHeader`, `ParseOptions`, `StringifyOptions`, `SerializeOptions`, and `SetCookie`.
+- unsupported APIs: JavaScript `undefined` cookie values, null-prototype object semantics, boolean `sameSite` shorthand, arbitrary runtime coercion beyond typed C++ parameters, CommonJS loader behavior, and upstream fixture-regeneration scripts.
 - dependency plan: no runtime npm dependencies; link only base `polycpp`.
-- polycpp modules to use: `core/uri`, `core/date`, `core/number`, and `core/error`.
-- missing polycpp primitives: none for v0; no socket, listener, stream, Buffer, timer, crypto, TLS, network, or HTTP primitive is required by the upstream public runtime API.
+- polycpp modules to use: `core/uri`, `core/date`, `core/number`, `core/error`, and optional `http::Headers` adapters.
+- missing polycpp primitives: none for v0; no socket, listener, stream, Buffer, timer, crypto, TLS, or network primitive is required by the upstream public runtime API.

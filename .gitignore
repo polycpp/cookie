@@ -33,6 +33,10 @@ compile_commands.json
 Testing/
 CTestTestfile.cmake
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # Package managers / FetchContent
 _deps/
 .tmp/

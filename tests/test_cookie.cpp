@@ -4,14 +4,42 @@
  */
 
 #include <polycpp/cookie/detail/aggregator.hpp>
+#include <polycpp/cookie/http.hpp>
+
+#include "fixtures/top_site_fixtures.hpp"
 
 #include <gtest/gtest.h>
 
 #include <chrono>
 #include <map>
 #include <string>
+#include <string_view>
 
 using namespace polycpp::cookie;
+
+namespace {
+
+std::string trimSpacesAndTabs(std::string_view value) {
+    auto first = value.find_first_not_of(" \t");
+    if (first == std::string_view::npos) return "";
+
+    auto last = value.find_last_not_of(" \t");
+    return std::string(value.substr(first, last - first + 1));
+}
+
+std::string firstCookieName(std::string_view header) {
+    auto eq = header.find('=');
+    if (eq == std::string_view::npos) return "";
+    return trimSpacesAndTabs(header.substr(0, eq));
+}
+
+bool containsNoCase(std::string_view haystack, std::string_view needle) {
+    auto lowerHaystack = detail::toLower(std::string(haystack));
+    auto lowerNeedle = detail::toLower(std::string(needle));
+    return lowerHaystack.find(lowerNeedle) != std::string::npos;
+}
+
+} // namespace
 
 // ============================================================================
 // parseCookie tests
@@ -303,6 +331,20 @@ TEST(ParseSetCookieTest, ParseNegativeMaxAge) {
     auto sc = parseSetCookie("key=value; Max-Age=-1");
     EXPECT_TRUE(sc.maxAge.has_value());
     EXPECT_EQ(*sc.maxAge, -1);
+}
+
+TEST(ParseSetCookieTest, IgnoreOverflowingMaxAge) {
+    SetCookie sc;
+    EXPECT_NO_THROW(sc = parseSetCookie(
+        "key=value; Max-Age=999999999999999999999999999999"));
+    EXPECT_FALSE(sc.maxAge.has_value());
+}
+
+TEST(ParseSetCookieTest, IgnoreUnderflowingMaxAge) {
+    SetCookie sc;
+    EXPECT_NO_THROW(sc = parseSetCookie(
+        "key=value; Max-Age=-999999999999999999999999999999"));
+    EXPECT_FALSE(sc.maxAge.has_value());
 }
 
 TEST(ParseSetCookieTest, ParseDomain) {
@@ -679,6 +721,58 @@ TEST(StringifySetCookieTest, SecureFalse) {
 }
 
 // ============================================================================
+// Top-site compatibility fixture tests
+// ============================================================================
+
+TEST(TopSiteFixtureTest, ParseCookieFixtures) {
+    for (const auto& fixture : polycpp_cookie_test::kTopCookieFixtures) {
+        SCOPED_TRACE(std::string(fixture.domain));
+
+        auto cookies = parseCookie(std::string(fixture.header));
+
+        EXPECT_EQ(cookies.size(), fixture.expectedCount);
+        EXPECT_TRUE(cookies.contains(std::string(fixture.sampleName)));
+    }
+}
+
+TEST(TopSiteFixtureTest, ParseSetCookieFixtures) {
+    for (const auto& fixture : polycpp_cookie_test::kTopSetCookieFixtures) {
+        SCOPED_TRACE(std::string(fixture.domain) + ": " + std::string(fixture.header));
+
+        SetCookie parsed;
+        EXPECT_NO_THROW(parsed = parseSetCookie(std::string(fixture.header)));
+
+        EXPECT_EQ(parsed.name, firstCookieName(fixture.header));
+        EXPECT_FALSE(parsed.name.empty());
+
+        if (containsNoCase(fixture.header, "max-age=")) {
+            EXPECT_TRUE(parsed.maxAge.has_value());
+        }
+        if (containsNoCase(fixture.header, "domain=")) {
+            EXPECT_TRUE(parsed.domain.has_value());
+        }
+        if (containsNoCase(fixture.header, "path=")) {
+            EXPECT_TRUE(parsed.path.has_value());
+        }
+        if (containsNoCase(fixture.header, "httponly")) {
+            EXPECT_TRUE(parsed.httpOnly);
+        }
+        if (containsNoCase(fixture.header, "secure")) {
+            EXPECT_TRUE(parsed.secure);
+        }
+        if (containsNoCase(fixture.header, "partitioned")) {
+            EXPECT_TRUE(parsed.partitioned);
+        }
+        if (containsNoCase(fixture.header, "samesite=")) {
+            EXPECT_TRUE(parsed.sameSite.has_value());
+        }
+        if (containsNoCase(fixture.header, "priority=")) {
+            EXPECT_TRUE(parsed.priority.has_value());
+        }
+    }
+}
+
+// ============================================================================
 // Backward-compatible alias tests
 // ============================================================================
 
@@ -689,6 +783,66 @@ TEST(AliasTest, ParseAlias) {
 
 TEST(AliasTest, SerializeAlias) {
     EXPECT_EQ(serialize("foo", "bar"), "foo=bar");
+}
+
+// ============================================================================
+// HTTP Headers adapter tests
+// ============================================================================
+
+TEST(HttpHeadersAdapterTest, ParseCombinedCookieHeader) {
+    polycpp::http::Headers headers;
+    headers.append("Cookie", "a=1");
+    headers.append("Cookie", "b=two%20words");
+
+    auto cookies = parseCookieHeader(headers);
+
+    EXPECT_EQ(cookies.size(), 2u);
+    EXPECT_EQ(cookies["a"], "1");
+    EXPECT_EQ(cookies["b"], "two words");
+}
+
+TEST(HttpHeadersAdapterTest, SetCookieHeaderFromMap) {
+    polycpp::http::Headers headers;
+    setCookieHeader(headers, {{"a", "1"}, {"b", "two words"}});
+
+    auto value = headers.getCombined("Cookie");
+    ASSERT_TRUE(value.has_value());
+    EXPECT_EQ(*value, "a=1; b=two%20words");
+}
+
+TEST(HttpHeadersAdapterTest, ParseSetCookieHeaders) {
+    polycpp::http::Headers headers;
+    headers.append("Set-Cookie", "sid=abc; HttpOnly; Secure");
+    headers.append("Set-Cookie", "theme=dark; Path=/");
+
+    auto cookies = parseSetCookieHeaders(headers);
+
+    ASSERT_EQ(cookies.size(), 2u);
+    EXPECT_EQ(cookies[0].name, "sid");
+    EXPECT_TRUE(cookies[0].httpOnly);
+    EXPECT_TRUE(cookies[0].secure);
+    EXPECT_EQ(cookies[1].name, "theme");
+    ASSERT_TRUE(cookies[1].path.has_value());
+    EXPECT_EQ(*cookies[1].path, "/");
+}
+
+TEST(HttpHeadersAdapterTest, AppendSetCookieHeaders) {
+    polycpp::http::Headers headers;
+
+    SetCookie sid;
+    sid.name = "sid";
+    sid.value = "abc";
+    sid.httpOnly = true;
+    appendSetCookieHeader(headers, sid);
+
+    SerializeOptions opts;
+    opts.path = "/";
+    appendSetCookieHeader(headers, "theme", "dark", opts);
+
+    auto values = headers.getSetCookie();
+    ASSERT_EQ(values.size(), 2u);
+    EXPECT_EQ(values[0], "sid=abc; HttpOnly");
+    EXPECT_EQ(values[1], "theme=dark; Path=/");
 }
 
 // ============================================================================

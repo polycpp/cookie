@@ -2,8 +2,7 @@ Installation
 ============
 
 cookie targets C++20 and builds with clang ≥ 14 or gcc ≥ 11. It depends
-only on the base `polycpp <https://github.com/enricohuang/polycpp>`_ library
-(and none (header-only on top of polycpp)).
+only on the base `polycpp <https://github.com/enricohuang/polycpp>`_ library.
 
 CMake FetchContent (recommended)
 --------------------------------
@@ -47,6 +46,12 @@ Build options
 ``POLYCPP_COOKIE_BUILD_TESTS``
     Build the GoogleTest suite. Defaults to ``ON`` for standalone builds and
     ``OFF`` when consumed via FetchContent.
+
+``POLYCPP_COOKIE_BUILD_EXAMPLES``
+    Build the runnable example programs. Defaults to ``OFF``.
+
+``POLYCPP_COOKIE_BUILD_BENCHMARKS``
+    Build the dependency-free parse benchmark executable. Defaults to ``OFF``.
 
 ``POLYCPP_IO``
     ``asio`` (default) or ``libuv`` — inherited from polycpp.

@@ -14,6 +14,7 @@ Module index
 
    parse-serialize
    set-cookie
+   http-adapters
    options
 
 Namespace overview
