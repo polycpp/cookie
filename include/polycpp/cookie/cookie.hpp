@@ -10,7 +10,7 @@
  *
  * @see https://www.npmjs.com/package/cookie
  * @see https://datatracker.ietf.org/doc/html/rfc6265
- * @since 0.1.0
+ * @since 1.0.0
  */
 
 #include <chrono>
@@ -26,7 +26,7 @@ namespace cookie {
  * @brief Options for parsing cookie strings.
  *
  * @see https://github.com/jshttp/cookie#parsecookiestr-options
- * @since 0.1.0
+ * @since 1.0.0
  */
 struct ParseOptions {
     /**
@@ -42,7 +42,7 @@ struct ParseOptions {
  * @brief Options for stringifying cookie values.
  *
  * @see https://github.com/jshttp/cookie#stringifycookiecookies-options
- * @since 0.1.0
+ * @since 1.0.0
  */
 struct StringifyOptions {
     /**
@@ -57,7 +57,7 @@ struct StringifyOptions {
  * @brief Represents a parsed or to-be-serialized Set-Cookie header.
  *
  * @see https://github.com/jshttp/cookie#setcookie
- * @since 0.1.0
+ * @since 1.0.0
  */
 struct SetCookie {
     /** @brief Cookie name. */
@@ -126,7 +126,7 @@ struct SetCookie {
  *
  * Combines StringifyOptions with all Set-Cookie attributes except name/value.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 struct SerializeOptions {
     /** @brief Custom encode function. */
@@ -179,7 +179,7 @@ struct SerializeOptions {
  * @endcode
  *
  * @see https://github.com/jshttp/cookie#parsecookiestr-options
- * @since 0.1.0
+ * @since 1.0.0
  */
 std::map<std::string, std::string> parseCookie(
     const std::string& str,
@@ -201,7 +201,7 @@ std::map<std::string, std::string> parseCookie(
  * @endcode
  *
  * @see https://github.com/jshttp/cookie#stringifycookiecookies-options
- * @since 0.1.0
+ * @since 1.0.0
  */
 std::string stringifyCookie(
     const std::map<std::string, std::string>& cookies,
@@ -221,7 +221,7 @@ std::string stringifyCookie(
  * @endcode
  *
  * @see https://github.com/jshttp/cookie#parsesetcookiestr-options
- * @since 0.1.0
+ * @since 1.0.0
  */
 SetCookie parseSetCookie(
     const std::string& str,
@@ -247,7 +247,7 @@ SetCookie parseSetCookie(
  * @endcode
  *
  * @see https://github.com/jshttp/cookie#stringifysetcookiecookie-options
- * @since 0.1.0
+ * @since 1.0.0
  */
 std::string stringifySetCookie(
     const SetCookie& cookie,
@@ -274,7 +274,7 @@ std::string stringifySetCookie(
  * @endcode
  *
  * @see https://github.com/jshttp/cookie#serializename-value-options
- * @since 0.1.0
+ * @since 1.0.0
  */
 std::string stringifySetCookie(
     const std::string& name,
@@ -289,7 +289,7 @@ std::string stringifySetCookie(
  * @return Map of cookie name to cookie value.
  *
  * @see parseCookie
- * @since 0.1.0
+ * @since 1.0.0
  */
 inline std::map<std::string, std::string> parse(
     const std::string& str,
@@ -306,7 +306,7 @@ inline std::map<std::string, std::string> parse(
  * @return The Set-Cookie header string.
  *
  * @see stringifySetCookie
- * @since 0.1.0
+ * @since 1.0.0
  */
 inline std::string serialize(
     const std::string& name,

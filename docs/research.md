@@ -181,7 +181,7 @@ compatibility infrastructure used by HTTP frameworks and middleware.
 
 ## v0 scope
 
-- port version: 0.1.0
+- port version: 1.0.0
 - versioning note: port version is independent from upstream versioning.
 - supported APIs: `parseCookie`, `stringifyCookie`, `parseSetCookie`, `stringifySetCookie`, `parse`, `serialize`, `parseCookieHeader`, `setCookieHeader`, `parseSetCookieHeaders`, `appendSetCookieHeader`, `ParseOptions`, `StringifyOptions`, `SerializeOptions`, and `SetCookie`.
 - unsupported APIs: JavaScript `undefined` cookie values, null-prototype object semantics, boolean `sameSite` shorthand, arbitrary runtime coercion beyond typed C++ parameters, CommonJS loader behavior, and upstream fixture-regeneration scripts.

@@ -4,7 +4,7 @@ A C++ port of [cookie](https://github.com/jshttp/cookie) for the [polycpp](https
 
 HTTP cookie parsing and serialization for C++20, implementing RFC 6265.
 
-Port version: `0.1.0`
+Port version: `1.0.0`
 
 Initial port based on upstream version: `1.1.1`
 

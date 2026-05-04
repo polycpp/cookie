@@ -7,7 +7,7 @@
  * The core cookie API stays string-based to mirror npm cookie. This header
  * adds opt-in convenience helpers for callers already using polycpp::http.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 
 #include <polycpp/cookie/cookie.hpp>
@@ -34,7 +34,7 @@ namespace cookie {
  * @param options Optional parse options.
  * @return Parsed cookie name/value map, or an empty map when no Cookie header exists.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 inline std::map<std::string, std::string> parseCookieHeader(
     const polycpp::http::Headers& headers,
@@ -50,7 +50,7 @@ inline std::map<std::string, std::string> parseCookieHeader(
  * @param cookies Cookie name/value map.
  * @param options Optional stringify options.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 inline void setCookieHeader(
     polycpp::http::Headers& headers,
@@ -66,7 +66,7 @@ inline void setCookieHeader(
  * @param options Optional parse options.
  * @return Parsed SetCookie values in header insertion order.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 inline std::vector<SetCookie> parseSetCookieHeaders(
     const polycpp::http::Headers& headers,
@@ -85,7 +85,7 @@ inline std::vector<SetCookie> parseSetCookieHeaders(
  * @param cookie Cookie value to serialize.
  * @param options Optional stringify options.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 inline void appendSetCookieHeader(
     polycpp::http::Headers& headers,
@@ -102,7 +102,7 @@ inline void appendSetCookieHeader(
  * @param value Cookie value.
  * @param options Set-Cookie serialization options.
  *
- * @since 0.1.0
+ * @since 1.0.0
  */
 inline void appendSetCookieHeader(
     polycpp::http::Headers& headers,
