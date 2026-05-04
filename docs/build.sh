@@ -9,7 +9,7 @@ echo "==> Doxygen"
 doxygen Doxyfile
 
 echo "==> Sphinx (html)"
-sphinx-build -b html -W --keep-going sphinx build/html
+sphinx-build -b html -W --keep-going -E -a sphinx build/html
 
 echo
 echo "Open docs/build/html/index.html in a browser."

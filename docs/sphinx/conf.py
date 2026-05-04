@@ -66,6 +66,7 @@ html_css_files = ['custom.css']
 html_title = f"{project} {version}"
 html_copy_source = False
 html_baseurl = 'https://polycpp.github.io/cookie/'
+sitemap_url_scheme = '{link}'
 
 # ─── Intersphinx to the base polycpp docs (optional — commented by default
 # until polycpp publishes an objects.inv; swap the URL once it's live). ──
