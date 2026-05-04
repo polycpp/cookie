@@ -134,4 +134,4 @@ Legend:
 - [x] `python3 docs/build.py` passes
 - [x] third-party license notices complete
 - [x] GitHub repo visibility changed to public
-- Visibility note: catch-up workflow leaves private repos private until an explicit publish step.
+- Visibility note: repo was made public by the explicit release publish step on 2026-05-04.
