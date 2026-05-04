@@ -14,7 +14,7 @@ Legend:
 - [x] GitHub repo created under `polycpp`
 - [x] GitHub repo visibility verified private
 - GitHub repo URL: https://github.com/polycpp/cookie
-- GitHub repo private: yes
+- GitHub repo private: no
 - [x] baseline readiness passed
 - [x] upstream repo cloned or updated locally
 - [x] upstream revision recorded in `docs/research.md`
@@ -133,5 +133,5 @@ Legend:
 - [x] public docs do not contain local absolute paths
 - [x] `python3 docs/build.py` passes
 - [x] third-party license notices complete
-- [ ] GitHub repo visibility changed to public
+- [x] GitHub repo visibility changed to public
 - Visibility note: catch-up workflow leaves private repos private until an explicit publish step.
