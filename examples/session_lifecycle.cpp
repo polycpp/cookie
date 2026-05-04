@@ -14,10 +14,10 @@ cookie::SerializeOptions sessionAttrs() {
     // Same attributes across all lifecycle phases — matching `Path` is
     // critical so the deletion targets the right cookie.
     return cookie::SerializeOptions{
+        .path     = "/",
         .httpOnly = true,
         .secure   = true,
-        .sameSite = cookie::SameSite::Lax,
-        .path     = "/",
+        .sameSite = "lax",
     };
 }
 

@@ -31,8 +31,30 @@ target_include_directories(polycpp_cookie PUBLIC
 # Alias for consistent naming
 add_library(polycpp::cookie ALIAS polycpp_cookie)
 
+option(POLYCPP_COOKIE_BUILD_EXAMPLES "Build examples" OFF)
+if(POLYCPP_COOKIE_BUILD_EXAMPLES)
+    add_executable(polycpp_cookie_example_parse_header examples/parse_header.cpp)
+    target_link_libraries(polycpp_cookie_example_parse_header PRIVATE polycpp::cookie)
+    set_target_properties(polycpp_cookie_example_parse_header PROPERTIES
+        OUTPUT_NAME parse_header
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples
+    )
+
+    add_executable(polycpp_cookie_example_session_lifecycle examples/session_lifecycle.cpp)
+    target_link_libraries(polycpp_cookie_example_session_lifecycle PRIVATE polycpp::cookie)
+    set_target_properties(polycpp_cookie_example_session_lifecycle PROPERTIES
+        OUTPUT_NAME session_lifecycle
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/examples
+    )
+endif()
+
 # Tests
-option(POLYCPP_COOKIE_BUILD_TESTS "Build tests" ON)
+if(CMAKE_SOURCE_DIR STREQUAL PROJECT_SOURCE_DIR)
+    set(POLYCPP_COOKIE_BUILD_TESTS_DEFAULT ON)
+else()
+    set(POLYCPP_COOKIE_BUILD_TESTS_DEFAULT OFF)
+endif()
+option(POLYCPP_COOKIE_BUILD_TESTS "Build tests" ${POLYCPP_COOKIE_BUILD_TESTS_DEFAULT})
 if(POLYCPP_COOKIE_BUILD_TESTS)
     enable_testing()
     FetchContent_Declare(
@@ -42,8 +64,8 @@ if(POLYCPP_COOKIE_BUILD_TESTS)
     )
     FetchContent_MakeAvailable(googletest)
 
-    add_executable(test_cookie tests/test_cookie.cpp)
-    target_link_libraries(test_cookie PRIVATE polycpp_cookie GTest::gtest_main)
+    add_executable(polycpp_cookie_test_cookie tests/test_cookie.cpp)
+    target_link_libraries(polycpp_cookie_test_cookie PRIVATE polycpp::cookie GTest::gtest_main)
     include(GoogleTest)
-    gtest_discover_tests(test_cookie)
+    gtest_discover_tests(polycpp_cookie_test_cookie)
 endif()

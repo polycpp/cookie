@@ -3,7 +3,7 @@ Session cookie lifecycle
 
 A compact program that exercises the sign-in → refresh → sign-out flow
 with the same ``SerializeOptions`` across all three phases. Run it with
-``--help`` to see the CLI.
+``signin``, ``refresh``, or ``signout``.
 
 .. literalinclude:: ../../../examples/session_lifecycle.cpp
    :language: cpp
@@ -14,7 +14,7 @@ Build and run:
 .. code-block:: bash
 
    cmake -B build -G Ninja -DPOLYCPP_COOKIE_BUILD_EXAMPLES=ON
-   cmake --build build --target session_lifecycle
+   cmake --build build --target polycpp_cookie_example_session_lifecycle
    ./build/examples/session_lifecycle signin
    ./build/examples/session_lifecycle refresh
    ./build/examples/session_lifecycle signout

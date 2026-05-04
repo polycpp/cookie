@@ -8,7 +8,9 @@ every RFC 6265 / RFC 6265bis attribute polycpp recognises.
    :members:
    :undoc-members:
 
-SameSite
---------
+Attribute string values
+-----------------------
 
-.. doxygenenum:: polycpp::cookie::SameSite
+``SetCookie::sameSite`` and ``SerializeOptions::sameSite`` accept the
+validated strings ``"strict"``, ``"lax"``, and ``"none"``. Invalid strings
+are ignored while parsing and throw ``polycpp::TypeError`` while serializing.

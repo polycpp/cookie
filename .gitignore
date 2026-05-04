@@ -35,6 +35,7 @@ CTestTestfile.cmake
 
 # Package managers / FetchContent
 _deps/
+.tmp/
 
 # AI agent files
 CLAUDE.md

@@ -4,6 +4,27 @@ A C++ port of [cookie](https://github.com/jshttp/cookie) for the [polycpp](https
 
 HTTP cookie parsing and serialization for C++20, implementing RFC 6265.
 
+Port version: `0.1.0`
+
+Initial port based on upstream version: `1.1.1`
+
+## Status
+
+Implemented:
+
+- `parseCookie` / `parse` for request `Cookie` headers
+- `stringifyCookie` for request `Cookie` headers
+- `parseSetCookie` for response `Set-Cookie` headers
+- `stringifySetCookie` / `serialize` for response `Set-Cookie` headers
+- `Max-Age`, `Expires`, `Domain`, `Path`, `HttpOnly`, `Secure`, `Partitioned`, `Priority`, and `SameSite`
+- Custom value encode/decode callbacks
+
+Known differences from upstream:
+
+- Cookie objects use `std::map<std::string, std::string>`, so request-cookie serialization is key-sorted and cannot represent JavaScript `undefined` values.
+- `sameSite` is represented as the strings `"strict"`, `"lax"`, or `"none"`; the JavaScript boolean shorthand is omitted.
+- JavaScript package-loader details and null-prototype object behavior are not part of the C++ API.
+
 ## Prerequisites
 
 - CMake 3.20+

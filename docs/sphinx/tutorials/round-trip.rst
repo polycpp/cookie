@@ -32,7 +32,7 @@ Step 1 — parse once, inspect the attribute struct
    EXPECT_EQ(parsed.maxAge, 600);
    EXPECT_TRUE(parsed.httpOnly);
    EXPECT_TRUE(parsed.secure);
-   EXPECT_EQ(parsed.sameSite, SameSite::Strict);
+   EXPECT_EQ(parsed.sameSite, "strict");
 
 Every attribute is ``std::optional``-typed on ``SetCookie``, so a missing
 ``Expires`` is ``std::nullopt`` — not an empty string. That distinction

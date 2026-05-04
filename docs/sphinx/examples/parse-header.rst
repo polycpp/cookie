@@ -14,5 +14,5 @@ Build and run:
 .. code-block:: bash
 
    cmake -B build -G Ninja -DPOLYCPP_COOKIE_BUILD_EXAMPLES=ON
-   cmake --build build --target parse_header
+   cmake --build build --target polycpp_cookie_example_parse_header
    echo 'session=abc; theme=dark; lang=en' | ./build/examples/parse_header

@@ -297,3 +297,5 @@ inline std::string serialize(
 
 } // namespace cookie
 } // namespace polycpp
+
+#include <polycpp/cookie/detail/cookie.hpp>

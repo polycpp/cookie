@@ -18,7 +18,7 @@ Drop-in for request/response middleware that already speaks polycpp's
    // pairs["session"] == "abc123"
 
    std::string header = cookie::serialize("session", "abc123",
-       {.httpOnly = true, .secure = true, .sameSite = cookie::SameSite::Lax});
+       {.httpOnly = true, .secure = true, .sameSite = "lax"});
    // header == "session=abc123; HttpOnly; Secure; SameSite=Lax"
 
 .. grid:: 2
@@ -33,21 +33,21 @@ Drop-in for request/response middleware that already speaks polycpp's
    .. grid-item-card:: C++20 native
       :margin: 1
 
-      Header-only where possible, zero-overhead abstractions, ``constexpr``
-      and ``std::string_view`` throughout.
+      A small compiled target with typed option structs and explicit
+      validation exceptions.
 
    .. grid-item-card:: Tested
       :margin: 1
 
-      Ported test corpus from the npm package and RFC 6265 — 91 tests
+      Ported test corpus from the npm package and RFC 6265 — focused tests
       across attribute parsing, round-trips, and edge cases (empty values,
-      unicode, duplicate names).
+      custom encoding, and duplicate names).
 
    .. grid-item-card:: Plays well with polycpp
       :margin: 1
 
-      Uses the same JSON value, error, and typed-event types as the rest of
-      the polycpp ecosystem — no impedance mismatch.
+      Reuses polycpp URI, date, number, and error helpers while keeping the
+      public API to ordinary C++ strings and aggregates.
 
 Getting started
 ---------------

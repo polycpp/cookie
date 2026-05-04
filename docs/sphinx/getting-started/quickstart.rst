@@ -29,11 +29,11 @@ Full example
 
        // 2. Build a Set-Cookie header for a new session.
        std::string sessionHeader = cookie::serialize("session", "xyz789", {
-           .httpOnly = true,
-           .secure   = true,
-           .sameSite = cookie::SameSite::Strict,
            .maxAge   = 3600,                  // 1 hour
            .path     = "/",
+           .httpOnly = true,
+           .secure   = true,
+           .sameSite = "strict",
        });
        std::cout << "\nSet-Cookie: " << sessionHeader << '\n';
 
@@ -78,9 +78,9 @@ What just happened
    every RFC 6265 attribute by designated initialiser — no builders, no
    chained setters.
 
-3. The enum :cpp:enum:`polycpp::cookie::SameSite` has the same three values
-   as the spec (``Strict``, ``Lax``, ``None``). Pass ``SameSite::None``
-   only together with ``secure = true`` — browsers reject it otherwise.
+3. ``sameSite`` accepts ``"strict"``, ``"lax"``, or ``"none"``. Use
+   ``"none"`` only together with ``secure = true`` — browsers reject it
+   otherwise.
 
 Next steps
 ----------

@@ -9,11 +9,11 @@ the top-level site so each embed gets its own jar.
 .. code-block:: cpp
 
    std::string header = polycpp::cookie::serialize("embed_session", sessionId, {
+       .path        = "/",
        .httpOnly    = true,
        .secure      = true,
-       .sameSite    = polycpp::cookie::SameSite::None,
        .partitioned = true,
-       .path        = "/",
+       .sameSite    = "none",
    });
    // embed_session=<id>; Path=/; HttpOnly; Secure; SameSite=None; Partitioned
 

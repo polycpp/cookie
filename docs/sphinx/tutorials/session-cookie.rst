@@ -5,8 +5,8 @@ Issue a secure session cookie
 signed session cookie and invalidates it on sign-out.
 
 **You'll use:** :cpp:func:`polycpp::cookie::serialize`,
-:cpp:class:`polycpp::cookie::SerializeOptions`, and the
-:cpp:enum:`polycpp::cookie::SameSite` enum.
+:cpp:class:`polycpp::cookie::SerializeOptions`, and the ``sameSite``
+option.
 
 **Prerequisites:** installed and linking polycpp and ``polycpp::cookie``.
 See :doc:`../getting-started/installation` if not.
@@ -19,11 +19,11 @@ For a session cookie on a TLS-only site, the sane defaults are:
 .. code-block:: cpp
 
    polycpp::cookie::SerializeOptions sessionOpts{
+       .maxAge   = 60 * 60 * 2,                     // 2-hour idle lifetime
+       .path     = "/",
        .httpOnly = true,                            // block document.cookie access
        .secure   = true,                            // never sent over plain HTTP
-       .sameSite = polycpp::cookie::SameSite::Lax,  // allow top-level cross-site GET
-       .path     = "/",
-       .maxAge   = 60 * 60 * 2,                     // 2-hour idle lifetime
+       .sameSite = "lax",                           // allow top-level cross-site GET
    };
 
 These align with the OWASP session-management cheat sheet. Bump

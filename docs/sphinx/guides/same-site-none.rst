@@ -8,10 +8,10 @@ credentials).
 .. code-block:: cpp
 
    std::string header = polycpp::cookie::serialize("xs_token", token, {
+       .path     = "/",
        .httpOnly = true,
        .secure   = true,                                   // REQUIRED
-       .sameSite = polycpp::cookie::SameSite::None,
-       .path     = "/",
+       .sameSite = "none",
    });
 
 Rules the library (and the browser) enforce:
